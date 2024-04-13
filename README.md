@@ -7,5 +7,3 @@ this include:
 -arduino code for receiving data
 -arduino code that handle the control of the motors
 -esp code that handle the image communication
-
-try the update commit
