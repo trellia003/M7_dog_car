@@ -1,6 +1,6 @@
 # DOG_CAR
 
-this is a repo containing all the code neede for running the DOG_CAR
+this is a repo containing all the code neede for running the DOG_CAR 
 
 this include:\
 -python code for data communication\
