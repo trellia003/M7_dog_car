@@ -16,8 +16,8 @@ try:
     # command = "pvotleft"
     # command = "onspotright"
     # command = "pvotright"
-    # command = "forward"
-    command = "stop"
+    command = "forward"
+    # command = "stop"
     speed = 100
     message = f"Com:{command}:{speed}:end"
     sock.sendall(message.encode())
