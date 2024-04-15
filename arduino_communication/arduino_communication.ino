@@ -5,7 +5,8 @@ SoftwareSerial mySerial(10, 11);  // RX, TX
 char ssid[] = "#11";               // your network SSID (name)
 char pass[] = "HuizeSkipBidi!11";  // your network password (use for WPA, or use as key for WEP)
 
-int keyIndex = 0;  // your network key index number (needed only for WEP)
+// char ssid[] = "elia";         // your network SSID (name)
+// char pass[] = "fantacalcio";  // your network password (use for WPA, or use as key for WEP)
 
 int status = WL_IDLE_STATUS;
 
@@ -15,10 +16,34 @@ boolean alreadyConnected = false;  // whether or not the client was connected pr
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial) {
-    ;
-  }
   mySerial.begin(9600);
+  serverSetup();
+}
+
+void loop() {
+  WiFiClient client = server.available();
+
+  if (client) {
+    if (!alreadyConnected) {
+      client.flush();
+      Serial.println("We have a new client");
+      client.println("Hello, client!");
+      alreadyConnected = true;
+    }
+
+    if (client.available() > 0) {
+      String command = client.readStringUntil('\n');
+      Serial.println("Received command:          " + command);
+      serialToControlArduino(command);
+    }
+  }
+}
+
+void serialToControlArduino(String command) {
+  mySerial.println(command);
+}
+
+void serverSetup() {
 
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
@@ -35,33 +60,12 @@ void setup() {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
     status = WiFi.begin(ssid, pass);
-    delay(10000);
+    delay(5000);
   }
 
   server.begin();
   printWifiStatus();
 }
-
-void loop() {
-  WiFiClient client = server.available();
-
-  if (client) {
-    if (!alreadyConnected) {
-      client.flush();
-      Serial.println("We have a new client");
-      client.println("Hello, client!");
-      alreadyConnected = true;
-    }
-
-    if (client.available() > 0) {
-      String command = client.readStringUntil('\n');
-      Serial.println("Received command: " + command);
-      mySerial.println(command);
-      // Here you can process the command received from Python
-    }
-  }
-}
-
 void printWifiStatus() {
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());

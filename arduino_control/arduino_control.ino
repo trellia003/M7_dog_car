@@ -1,32 +1,37 @@
 #include <SoftwareSerial.h>
 
-const int rxPin = 11;  // RX pin of Arduino 2 connected to TX pin of Arduino 1
-SoftwareSerial mySerial(rxPin, -1);  // RX, TX
+
+SoftwareSerial mySerial(5, -1);  // RX, TX (only receiving) on pin 5
 
 void setup() {
-  Serial.begin(9600);
-  mySerial.begin(9600);
+  Serial.begin(9600);    // Initialize serial communication
+  mySerial.begin(9600);  // Initialize your serial communication port
 }
 
 void loop() {
-  if (mySerial.available()) {
-    String data = mySerial.readStringUntil('\n');  // Read until newline character
-    Serial.println(data);  // Print received data for debugging
+  Serial.println(readCommand());
+  delay (200);
+}
 
-    // // Parsing the received data
-    // int commaIndex = data.indexOf(',');
-    // if (commaIndex != -1) {
-    //   String valueA = data.substring(1, commaIndex); // Extract value of A
-    //   String valueB = data.substring(commaIndex + 2, data.length() - 1); // Extract value of B
+String readCommand() {
+  String command = "";
+  if (mySerial.available() > 0) {                            // Check if data is available to read
+    String receivedString = mySerial.readStringUntil('\n');  // Read the incoming data until newline character '\n'
+    // Serial.print("Received string: ");
+    // Serial.println(receivedString); // Print the received string
 
-    //   int intValueA = valueA.toInt();  // Convert A to integer
-    //   int intValueB = valueB.toInt();  // Convert B to integer
+    // Find the position of "com:" and ":end" in the received string
+    int startPos = receivedString.indexOf("Com:") + 4;  // Add 4 to move past "Com:"
+    int endPos = receivedString.indexOf(":end");
 
-    //   // Now you have the values of A and B in integer variables intValueA and intValueB respectively
-    //   Serial.print("Value of A: ");
-    //   Serial.println(intValueA);
-    //   Serial.print("Value of B: ");
-    //   Serial.println(intValueB);
-    // }
+    // If both "Com:" and ":end" are found
+    if (startPos != -1 && endPos != -1) {
+      // Extract the substring between "Com:" and ":end"
+      command = receivedString.substring(startPos, endPos);
+      // Serial.print("Extracted string: ");
+      // Serial.println(command); // Print the extracted string
+      // Here you can further process the extracted string
+    }
   }
+  return command;
 }
