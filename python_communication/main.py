@@ -10,11 +10,16 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Connect the socket to the server's address and port
 server_address = (arduino_ip, arduino_port)
 sock.connect(server_address)
-
 try:
     # Send data to Arduino
-    command = "l"
-    message = f"Com:{command}:end"
+    # command = "onspotleft"
+    # command = "pvotleft"
+    # command = "onspotright"
+    # command = "pvotright"
+    # command = "forward"
+    command = "stop"
+    speed = 100
+    message = f"Com:{command}:{speed}:end"
     sock.sendall(message.encode())
 finally:
     sock.close()
