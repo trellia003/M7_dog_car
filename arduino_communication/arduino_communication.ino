@@ -1,10 +1,10 @@
-#include <WiFiS3.h>
-#include <SoftwareSerial.h>
+#include <WiFiS3.h> 
+#include <SoftwareSerial.h> 
 SoftwareSerial mySerial(10, 11);  // RX, TX
 
 char ssid[] = "#11";               // your network SSID (name)
 char pass[] = "HuizeSkipBidi!11";  // your network password (use for WPA, or use as key for WEP)
-
+ 
 // char ssid[] = "elia";         // your network SSID (name)
 // char pass[] = "fantacalcio";  // your network password (use for WPA, or use as key for WEP)
 

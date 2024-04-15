@@ -6,7 +6,7 @@ SoftwareSerial mySerial(5, -1);  // RX, TX (only receiving) on pin 5
 void setup() {
   Serial.begin(9600);    // Initialize serial communication
   mySerial.begin(9600);  // Initialize your serial communication port
-}
+} 
 
 void loop() {
   Serial.println(readCommand());
