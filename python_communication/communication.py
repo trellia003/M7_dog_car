@@ -9,7 +9,7 @@ import socket
 esp32_cam_ip = "192.168.1.173"
 arduino_ip = "192.168.1.199"  # Change this to your Arduino's IP address
 arduino_port = 23
-speed = 100
+speed = 93
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
