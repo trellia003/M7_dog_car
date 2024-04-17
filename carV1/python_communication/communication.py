@@ -6,8 +6,12 @@ from io import BytesIO
 import threading
 import socket
 
-esp32_cam_ip = "192.168.1.173"
-arduino_ip = "192.168.1.199"  # Change this to your Arduino's IP address
+# esp32_cam_ip = "192.168.1.173"
+# arduino_ip = "192.168.1.199"  # Change this to your Arduino's IP address
+
+
+arduino_ip = "192.168.43.19"
+esp32_cam_ip = "192.168.43.128"
 arduino_port = 23
 speed = 93
 

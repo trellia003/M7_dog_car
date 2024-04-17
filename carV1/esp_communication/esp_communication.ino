@@ -4,8 +4,11 @@
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
 
-const char* ssid = "#11";
-const char* password = "HuizeSkipBidi!11";
+// const char* ssid = "#11";
+// const char* password = "HuizeSkipBidi!11";
+const char* ssid = "elia";         // your network SSID (name)
+const char* password = "fantacalcio";  // your network password (use for WPA, or use as key for WEP)
+
 
 void startCameraServer();
 
