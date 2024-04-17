@@ -59,7 +59,7 @@ def main():
         img_dup = image.copy()
         # Display the image
         # cv2.imshow("Image", image)
-        result_img, _, boxes = predict_and_detect(model, img_dup, classes=[0], conf=0.5)
+        result_img, _, boxes = predict_and_detect(model, img_dup, classes=[0], conf=0.5) # 24
         cv2.imshow("Image", result_img)
 
         desired_size = 96
