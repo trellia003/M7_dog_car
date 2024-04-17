@@ -4,7 +4,6 @@ from ultralytics import YOLO
 
 model = YOLO("yolov9c.pt")
 
-boxes = []
 
 def predict(chosen_model, img, classes=[], conf=0.5):
     if classes:
@@ -14,7 +13,9 @@ def predict(chosen_model, img, classes=[], conf=0.5):
 
     return results
 
+
 def predict_and_detect(chosen_model, img, classes=[], conf=0.5, rectangle_thickness=2, text_thickness=1):
+    boxes = []
     results = predict(chosen_model, img, classes, conf=conf)
     for result in results:
         for box in result.boxes:
@@ -28,7 +29,7 @@ def predict_and_detect(chosen_model, img, classes=[], conf=0.5, rectangle_thickn
             cv2.putText(img, f"{result.names[int(box.cls[0])]}",
                         (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
                         cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), text_thickness)
-    return img, results
+    return img, results, boxes
 
 
 def main():
@@ -51,12 +52,19 @@ def main():
         # Load the current image
         image_path = os.path.join(folder_path, image_files[current_index])
         image = cv2.imread(image_path)
-        img_dup= image.copy()
+
+        display_size = 400
+        image = cv2.resize(image, (display_size, display_size))
+
+        img_dup = image.copy()
         # Display the image
         # cv2.imshow("Image", image)
-        result_img, _ = predict_and_detect(model, img_dup, classes=[0], conf=0.5)
+        result_img, _, boxes = predict_and_detect(model, img_dup, classes=[0], conf=0.5)
         cv2.imshow("Image", result_img)
 
+        desired_size = 96
+
+        image = cv2.resize(image, (desired_size, desired_size))
         # Wait for key press
         key = cv2.waitKey(0)
 
@@ -68,8 +76,17 @@ def main():
             # Create a corresponding text file
             with open(os.path.join(yolo_folder, os.path.splitext(image_files[current_index])[0] + ".txt"), "w") as f:
                 # Write some dummy content (you can adjust this according to your YOLO format)
-                f.write(f"0 {boxes[0]} {boxes[1]} {boxes[2]} {boxes[3]}")
+                f.write(
+                    f"1 {boxes[0] / display_size} {boxes[1] / display_size} {boxes[2] / display_size} {boxes[3] / display_size}")
 
+        if key == ord('k'):
+            # Save the image in YOLO folder
+            cv2.imwrite(os.path.join(yolo_folder, image_files[current_index]), image)
+            h, w, _ = image.shape
+            # Create a corresponding text file
+            with open(os.path.join(yolo_folder, os.path.splitext(image_files[current_index])[0] + ".txt"), "w") as f:
+                # Write some dummy content (you can adjust this according to your YOLO format)
+                f.write(f"0 0 0 {w / desired_size} {h / desired_size}")
 
         if key == ord('q'):
             cv2.destroyAllWindows()
@@ -81,10 +98,6 @@ def main():
     # Close OpenCV windows
     cv2.destroyAllWindows()
 
+
 if __name__ == "__main__":
     main()
-
-
-
-
-
