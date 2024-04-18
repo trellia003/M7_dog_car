@@ -26,7 +26,7 @@ def draw_rectangle(event, x, y, flags, params):
 
 
 # Folder containing images
-folder_path = 'data/empty'
+folder_path = 'data/backpack'
 
 # Get a list of image files in the folder
 image_files = [f for f in os.listdir(folder_path) if
@@ -53,7 +53,7 @@ for image_file in image_files:
             with open(os.path.join(folder_path, os.path.splitext(image_file)[0] + '.txt'), 'w') as f:
                 f.write(f"0 {coordinates[0][0]} {coordinates[0][1]} {coordinates[1][0]} {coordinates[1][1]}")
             break
-        else:
+        elif key == ord('s'):
             # Save default coordinates to a text file with the same name as the image
             with open(os.path.join(folder_path, os.path.splitext(image_file)[0] + '.txt'), 'w') as f:
                 f.write("1 0 0 1 1")  # Default coordinates
