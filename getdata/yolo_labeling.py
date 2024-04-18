@@ -34,7 +34,7 @@ def predict_and_detect(chosen_model, img, classes=[], conf=0.5, rectangle_thickn
 
 def main():
     # Path to the folder containing images
-    folder_path = "data/shoes"
+    folder_path = "data/backpack"
 
     # Path to the folder where images will be saved with YOLO annotations
     yolo_folder = "data/yolo"
@@ -54,12 +54,13 @@ def main():
         image = cv2.imread(image_path)
 
         display_size = 400
-        image = cv2.resize(image, (display_size, display_size))
+
 
         img_dup = image.copy()
+        img_dup = cv2.resize(img_dup, (display_size, display_size))
         # Display the image
         # cv2.imshow("Image", image)
-        result_img, _, boxes = predict_and_detect(model, img_dup, classes=[0], conf=0.5) # 24
+        result_img, _, boxes = predict_and_detect(model, img_dup, classes=[24], conf=0.05) # 24
         cv2.imshow("Image", result_img)
 
         desired_size = 96

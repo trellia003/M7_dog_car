@@ -1,4 +1,6 @@
 import cv2
+import os
+import time
 import requests
 import numpy as np
 from PIL import Image
@@ -48,10 +50,26 @@ def display_video():
         elif key == ord('a'):
             send_to_arduino("l")
         elif key == ord('k'):
+            save_image(img)
+        elif key == ord('p'):
             break
 
     cv2.destroyAllWindows()
     sock.close()
+
+
+def save_image(img):
+    # Create the smartxp folder if it does not exist
+    folder_path = "../getdata/data/backpack"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # Generate a unique filename using current timestamp
+    timestamp = int(time.time())
+    filename = os.path.join(folder_path, f"image_{timestamp}.jpg")
+
+    # Save the image as JPG
+    cv2.imwrite(filename, img)
 
 
 if __name__ == "__main__":
