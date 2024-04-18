@@ -20,11 +20,18 @@ def predict_and_detect(chosen_model, img, classes=[], conf=0.5, rectangle_thickn
     for result in results:
         for box in result.boxes:
             cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
-                          (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (255, 0, 0), rectangle_thickness)
-            boxes.append(box.xyxy[0][0])
-            boxes.append(box.xyxy[0][1])
-            boxes.append(box.xyxy[0][2])
-            boxes.append(box.xyxy[0][3])
+                          (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 255, 0), rectangle_thickness)
+
+            x, y, x2, y2 = box.xyxy[0][0], box.xyxy[0][1], box.xyxy[0][2], box.xyxy[0][3]
+            x_mid, y_mid, width, height = x + ((x2 - x) / 2), y + ((y2 - y) / 2), x2 - x, y2 - y
+            boxes.append(x_mid)
+            boxes.append(y_mid)
+            boxes.append(width)
+            boxes.append(height)
+            # boxes.append(box.xyxy[0][0])
+            # boxes.append(box.xyxy[0][1])
+            # boxes.append(box.xyxy[0][2])
+            # boxes.append(box.xyxy[0][3])
 
             cv2.putText(img, f"{result.names[int(box.cls[0])]}",
                         (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
@@ -34,10 +41,10 @@ def predict_and_detect(chosen_model, img, classes=[], conf=0.5, rectangle_thickn
 
 def main():
     # Path to the folder containing images
-    folder_path = "data/shoes"
+    folder_path = "data/combined_dataset"
 
     # Path to the folder where images will be saved with YOLO annotations
-    yolo_folder = "data/yolo"
+    yolo_folder = "data/no_backpacks"
 
     # Create the YOLO folder if it doesn't exist
     os.makedirs(yolo_folder, exist_ok=True)
@@ -59,38 +66,38 @@ def main():
         img_dup = image.copy()
         # Display the image
         # cv2.imshow("Image", image)
-        result_img, _, boxes = predict_and_detect(model, img_dup, classes=[0], conf=0.5) # 24
-        cv2.imshow("Image", result_img)
+        # result_img, _, boxes = predict_and_detect(model, img_dup, classes=[24], conf=0.5) # 24
+        # cv2.imshow("Image", result_img)
 
         desired_size = 96
 
         image = cv2.resize(image, (desired_size, desired_size))
         # Wait for key press
-        key = cv2.waitKey(0)
+        # key = cv2.waitKey(0)
 
         # Check if 's' key is pressed
-        if key == ord('s'):
-            # Save the image in YOLO folder
-            cv2.imwrite(os.path.join(yolo_folder, image_files[current_index]), image)
+        # if key == ord('s'):
+        #     # Save the image in YOLO folder
+        #     cv2.imwrite(os.path.join(yolo_folder, image_files[current_index]), image)
+        #
+        #     # Create a corresponding text file
+        #     with open(os.path.join(yolo_folder, os.path.splitext(image_files[current_index])[0] + ".txt"), "w") as f:
+        #         # Write some dummy content (you can adjust this according to your YOLO format)
+        #         f.write(
+        #             f"0 {boxes[0] / display_size} {boxes[1] / display_size} {boxes[2] / display_size} {boxes[3] / display_size}")
 
-            # Create a corresponding text file
-            with open(os.path.join(yolo_folder, os.path.splitext(image_files[current_index])[0] + ".txt"), "w") as f:
-                # Write some dummy content (you can adjust this according to your YOLO format)
-                f.write(
-                    f"1 {boxes[0] / display_size} {boxes[1] / display_size} {boxes[2] / display_size} {boxes[3] / display_size}")
-
-        if key == ord('k'):
-            # Save the image in YOLO folder
-            cv2.imwrite(os.path.join(yolo_folder, image_files[current_index]), image)
-            h, w, _ = image.shape
-            # Create a corresponding text file
-            with open(os.path.join(yolo_folder, os.path.splitext(image_files[current_index])[0] + ".txt"), "w") as f:
-                # Write some dummy content (you can adjust this according to your YOLO format)
-                f.write(f"0 0 0 {w / desired_size} {h / desired_size}")
-
-        if key == ord('q'):
-            cv2.destroyAllWindows()
-            quit()
+        # if key == ord('k'):
+        # Save the image in YOLO folder
+        cv2.imwrite(os.path.join(yolo_folder, image_files[current_index]), image)
+        h, w, _ = image.shape
+        # Create a corresponding text file
+        with open(os.path.join(yolo_folder, os.path.splitext(image_files[current_index])[0] + ".txt"), "w") as f:
+            # Write some dummy content (you can adjust this according to your YOLO format)
+            # f.write(f"1 0 0 {w / desired_size} {h / desired_size}")
+            f.write(f"1 {0.5} {0.5} {1.0} {1.0}")
+        # if key == ord('q'):
+        #     cv2.destroyAllWindows()
+        #     quit()
 
         # Move to the next image
         current_index += 1
