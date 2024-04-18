@@ -1,7 +1,8 @@
 import socket
 
 # Set the IP and Port where your Arduino Uno WiFi Rev2 is listening
-arduino_ip = "192.168.1.199"  # Change this to your Arduino's IP address
+# arduino_ip = "192.168.1.199"  # Change this to your Arduino's IP address
+arduino_ip = "192.168.43.19"
 arduino_port = 23
 
 # Create a TCP/IP socket
