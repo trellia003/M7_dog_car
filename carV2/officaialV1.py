@@ -17,10 +17,28 @@ arduino_ip = "192.168.43.19"
 esp32_cam_ip = "192.168.43.128"
 arduino_port = 23
 
+buffer_len = 3
+decision_buffer = ["s"] * buffer_len
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((arduino_ip, arduino_port))
+
+
+# Define signal handler function
+def terminate():
+    num_iterations = 5
+    for _ in range(num_iterations):
+        # Reset decision_buffer to contain all "s" values
+        for i in range(buffer_len):
+            decision_buffer[i] = "s"
+        send_to_arduino()
+        # Introduce a delay of 200 ms between each signal
+        time.sleep(0.2)
+    print('Script has been terminated.')
+    sock.close()  # Close the socket connection
+    cv2.destroyAllWindows()
+    quit()
 
 
 def fetch_frames():
@@ -31,10 +49,23 @@ def fetch_frames():
             yield response.content
 
 
-def send_to_arduino(command):
-    speed = 93
-    message = f"{command}:{speed}"
-    sock.sendall(message.encode())
+def send_to_arduino():
+    speed = 100
+    # print(decision_buffer)
+
+    if all(item == decision_buffer[0] for item in decision_buffer):
+        message = f"{decision_buffer[0]}:{speed}"
+        print("message:" + message)
+        # else:
+        # message = f"{decision_buffer[0]}:{speed}"
+        sock.sendall(message.encode())
+    else:
+        message = f"s:{speed}"
+        print("message:" + message)
+        # else:
+        # message = f"{decision_buffer[0]}:{speed}"
+        sock.sendall(message.encode())
+
 
 def model_load(filepath: str) -> Model:
     loaded_model = load_model(filepath)
@@ -51,7 +82,7 @@ def predict(model: Model, image):
 
     # If no backpacks are detected, the whole image should be the bounding box
     if pred_label == 1:
-        pred_bbox = [[0.0, 0.0, 1.0, 1.0]]
+        pred_bbox = [[0.0, 0.0, input_size - 1, input_size - 1]]
 
     return np.array(pred_label), np.array(pred_bbox)
 
@@ -60,6 +91,8 @@ def format_image(input_size: int, image: np.ndarray) -> np.ndarray:
     new_image = cv2.resize(image, (input_size, input_size), interpolation=cv2.INTER_LINEAR)
     new_image = new_image.astype(np.float32) / 255.0
     return new_image
+
+
 def display_image_with_box(image: np.ndarray, bounding_box: np.ndarray) -> None:
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
@@ -74,112 +107,77 @@ def display_image_with_box(image: np.ndarray, bounding_box: np.ndarray) -> None:
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(window_name, 500, 500)
     cv2.imshow(window_name, image)
-    cv2.waitKey(500)
-    cv2.destroyAllWindows()
+    key = cv2.waitKey(50)
+    if key == ord('q'):
+        terminate()
+
 
 def control_robot(input_size: int, label, bbox):
     x, y, x2, y2 = bbox
     x_mid, y_mid = (x + x2) / 2, (y + y2) / 2
 
-    margin_percentage = 0.1
+    margin_percentage_orizontal = 0.235
 
-    left_bound = input_size * (0.5 - margin_percentage)
-    right_bound = input_size * (0.5 + margin_percentage)
-    top_bound = input_size * (0.5 - margin_percentage)
-    bottom_bound = input_size * (0.5 + margin_percentage)
+    left_bound = input_size * (0.5 - margin_percentage_orizontal)
+    right_bound = input_size * (0.5 + margin_percentage_orizontal)
+    top_bound = input_size * (0.5 - 0.1)
+    bottom_bound = input_size * (0.5 + 0.1)
+    # print(label)
+    # print(f"bounds: {left_bound}, {right_bound},{top_bound},{bottom_bound}")
+    # print(f"{x_mid}, {y_mid}")
 
     if label == 1:
-        print('No backpack')
-        # TODO Drive forwards or smth; seek for bag
+        print('No backpack  l')
+        decision_buffer.append("l")
+        # TODO Drive forwards or smth; seek for bag  Stop moving for like 2 sec and then rotate ish?
     elif label == 0:
         if x_mid < left_bound:
-            print('x_mid < left_bound')
+            print('x_mid < left_bound  l')
+            decision_buffer.append("l")
             # TODO Move right
         elif x_mid > right_bound:
-            print('x_mid > left_bound')
+            print('x_mid > left_bound  r')
+            decision_buffer.append("r")
             # TODO Move left
         elif y_mid < top_bound:
-            print('y_mid < top_bound')
+            print('y_mid < top_bound  f')
+            decision_buffer.append("f")
             # TODO Move forwards
         elif y_mid > bottom_bound:
-            print('y_mid > bottom_bound')
+            print('y_mid > bottom_bound  b')
+            decision_buffer.append("b")
             # TODO Move backwards
         else:
-            print('Stop')
-            # TODO Stop moving for like 2 sec and then rotate ish?
+            print('Stop     s')
+            decision_buffer.append("s")
+            # TODO pee
+    decision_buffer.pop(0)
+    send_to_arduino()
+
 
 def display_video():
     frame_generator = fetch_frames()
     for frame in frame_generator:
+        print("")
         img = Image.open(BytesIO(frame))
         img = np.array(img)
         formatted_image = format_image(input_size, img)
         label, bbox = predict(model, formatted_image)
         label, bbox = label[0], bbox[0]
 
-        # control_robot(input_size, label, bbox)
-
         print('Prediction class', label)
-        display_image_with_box(formatted_image,bbox)
+        control_robot(input_size, label, bbox)
 
-        # key = cv2.waitKey(1)
-        # if key == ord('e'):
-        #     send_to_arduino("s")
-        # elif key == ord('w'):
-        #     send_to_arduino("f")
-        # elif key == ord('s'):
-        #     send_to_arduino("b")
-        # elif key == ord('d'):
-        #     send_to_arduino("r")
-        # elif key == ord('a'):
-        #     send_to_arduino("l")
-        # elif key == ord('k'):
-        #     save_image(img)
-        # elif key == ord('p'):
-        #     break
-
-    cv2.destroyAllWindows()
+        display_image_with_box(formatted_image, bbox)
     sock.close()
 
     # Adjust the frequency by changing the time delay
     # time.sleep(1)  # Change the value to set the frequency (in seconds)
 
 
-def save_image(img):
-    # Create the smartxp folder if it does not exist
-    folder_path = "../getdata/data/backpack"
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-
-    # Generate a unique filename using current timestamp
-    timestamp = int(time.time())
-    filename = os.path.join(folder_path, f"image_{timestamp}.jpg")
-
-    # Save the image as JPG
-    cv2.imwrite(filename, img)
-
-
 if __name__ == "__main__":
     input_size = 96
-    model_path = 'train_backpacks.keras'
+    model_path = '../models/combined_96.keras'
     model = model_load(model_path)
     display_video_thread = threading.Thread(target=display_video)
     display_video_thread.start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

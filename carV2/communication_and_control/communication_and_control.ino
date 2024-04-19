@@ -139,6 +139,8 @@ void motor_head_decision(char decision, int speed) {
   } else if (decision == 'r') {
     right(speed);
   }
+  delay(300);
+  stop();
 }
 
 void setup_motors() {

@@ -58,6 +58,8 @@ def display_video():
     sock.close()
 
 
+
+
 def save_image(img):
     # Create the smartxp folder if it does not exist
     folder_path = "../getdata/data/backpack"
